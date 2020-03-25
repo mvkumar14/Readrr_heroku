@@ -75,10 +75,8 @@ def search():
 
         elif input_data['type'] == 'search':
             search_term = input_data['query']
-            response = gapi_query(search_term,startIndex,maxResults)
-            result = json.loads(response.text)
+            result = gapi_query(search_term,startIndex,maxResults)
             totalItems = result['totalItems']
-            result['items']
             item_list = process_list(result['items'],relevant_details)
             output = {'totalItems':totalItems,'items':item_list}
             return jsonify(output)
