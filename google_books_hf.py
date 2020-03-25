@@ -17,18 +17,17 @@ import json
 import os
 
 # Retreive Google API key from environment
-GOOGLE_KEY = str(os.environ['GOOGLE_KEY'])
+GOOGLE_KEY = os.environ['GOOGLE_KEY']
 
 # This is a function specific to our use case. It i abstracts away the
 # query logic.
 def gapi_query(query,startIndex=0,maxResults=10):
-    print(type(GOOGLE_KEY))
     my_query =   ('https://www.googleapis.com/books/v1/volumes?q='
                  + query
                  + '&startIndex='
-                 + startIndex
+                 + str(startIndex)
                  + '&maxResults='
-                 + maxResults
+                 + str(maxResults)
                  + '&key='
                  + GOOGLE_KEY)
     response = requests.get(my_query)
