@@ -21,13 +21,19 @@ GOOGLE_KEY = os.environ['GOOGLE_KEY']
 
 # This is a function specific to our use case. It i abstracts away the
 # query logic.
-def gapi_query(query):
+def gapi_query(query,startIndex=0,maxResults=10):
     response = requests.get('https://www.googleapis.com/books/v1/volumes?q='
                  + query
+                 + '&startIndex='
+                 + startIndex
+                 + '&maxResults='
+                 + maxResults
                  + '&key='
                  + GOOGLE_KEY)
     result_dict = json.loads(response.text)
-    return result_dict['items']
+    # Note that this dictionary still has some metadata 
+    # The metadata will be unpacked by the endpoint that uses the function
+    return result_dict
 
 
 # This is a general function. Should work on any JSON data

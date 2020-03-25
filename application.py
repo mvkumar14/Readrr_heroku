@@ -52,7 +52,14 @@ def test():
 @cross_origin(supports_credentials=True)
 def search():
     input_data = request.get_json(force=True)
-
+    try:
+        startIndex = input_data['startIndex']
+    except KeyError:
+        startIndex = 0
+    try:
+        maxResults = input_data['maxResults']
+    except KeyError:
+        maxResults = 10
     # Try to access keys from the post request
     try:
         if input_data['type'] == 'googleId':
@@ -68,12 +75,12 @@ def search():
 
         elif input_data['type'] == 'search':
             search_term = input_data['query']
-            response = requests.get('https://www.googleapis.com/books/v1/volumes?q='
-                + search_term
-                + '&key='
-                + GOOGLE_KEY)
+            response = gapi_query(search_term,startIndex,maxResults)
             result = json.loads(response.text)
-            output = process_list(result['items'],relevant_details)
+            totalItems = result['totalItems']
+            result['items']
+            item_list = process_list(result['items'],relevant_details)
+            output = {'totalItems':totalItems,'items':item_list}
             return jsonify(output)
         else:
             message = """ The value for the 'type' key was invalid.
