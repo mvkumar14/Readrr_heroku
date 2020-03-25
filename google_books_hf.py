@@ -23,7 +23,7 @@ GOOGLE_KEY = str(os.environ['GOOGLE_KEY'])
 # query logic.
 def gapi_query(query,startIndex=0,maxResults=10):
     print(type(GOOGLE_KEY))
-    response = requests.get('https://www.googleapis.com/books/v1/volumes?q='
+    my_query =   ('https://www.googleapis.com/books/v1/volumes?q='
                  + query
                  + '&startIndex='
                  + startIndex
@@ -31,6 +31,7 @@ def gapi_query(query,startIndex=0,maxResults=10):
                  + maxResults
                  + '&key='
                  + GOOGLE_KEY)
+    response = requests.get(my_query)
     result_dict = json.loads(response.text)
     # Note that this dictionary still has some metadata
     # The metadata will be unpacked by the endpoint that uses the function
