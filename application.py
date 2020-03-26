@@ -8,7 +8,7 @@ import pickle
 # Third Party Modules
 import requests
 import pandas as pd
-from sklearn.neighbors import NearestNeighbors
+# from sklearn.neighbors import NearestNeighbors
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS, cross_origin
 # from decouple import config #<-- not sure what this does yet
