@@ -3,9 +3,12 @@
 # references so from app instead of from .app
 import os
 import json
+import pickle
 
 # Third Party Modules
 import requests
+import pandas as pd
+from sklearn.neighbors import NearestNeighbors
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS, cross_origin
 # from decouple import config #<-- not sure what this does yet
@@ -29,6 +32,23 @@ relevant_details=['id','title','authors','publisher',
           'language','webReaderLink','textSnippet','isEbook',
           'averageRating']
 
+with open('book_list.pkl','rb') as f:
+    books = pickle.load(f)
+    ref_book_list,isbns = list(zip(*books))
+
+with open('knn_model.pkl','rb') as f:
+    knn = pickle.load(f)
+
+def get_recommendations(book_title, matrix=ref_book_list, model=knn, topn=10):
+    book_index = list(matrix.index).index(book_title)
+    distances, indices = model.kneighbors(matrix.iloc[book_index,:].values.reshape(1,-1), n_neighbors=topn+1)
+    print('Recommendations for {}:'.format(matrix.index[book_index]))
+    outlist=[]
+    for i in range(1, len(distances.flatten())):
+        # print('{}. {}, distance = {}'.format(i, matrix.index[indices.flatten()[i]], "%.3f"%distances.flatten()[i]))
+        outlist.append(matrix.index[indices.flatten()[i]])
+    print(outlist)
+    return outlist
 
 application = Flask(__name__)
 CORS(application,supports_credentials=True)
@@ -49,7 +69,6 @@ def test():
 
 
 @application.route('/search', methods=['POST'])
-@cross_origin(supports_credentials=True)
 def search():
     input_data = request.get_json(force=True)
     try:
@@ -94,17 +113,31 @@ def search():
 
 
 @application.route('/recommendations',methods=['POST'])
-@cross_origin(supports_credentials=True)
-# input is ???
-# The input might include parameters that aid in the model
-# selection process. We may have different models depending on
-# the different types of recommendations we need to provide.
-# output is a list of books.
 def recommendations():
-    cwd = os.getcwd()
-    print(cwd)
+    input_data = request.get_json(force=True)
+    userid = input_data["userid"]
+    user_data_url = ('https://api.readrr.app/api/datasciencetogetasecretandpineapplepizzaandbrocolli/'
+    + userid)
+    user_books = requests.get(user_data_url)
+    user_books = json.loads(user_books.text)
+    # if len(user_books)>1:
+    #     book_list = []
+    #     for i in user_books:
+    #         book_list.append(i['title'])
+    #     for i in book_list:
+    #         if i in ref_book_list:
+    #             reccs = get_recommendations(i)
+    #             reccs_gapi_format =[]
+    #             for i in reccs:
+    #                 reccs_gapi_format.append(gapi_query(i)['items'][0])
+    #             reccs_out_format = process_list(reccs_gapi_format,relevant_details)
+    #             interest = i
+    #             print(type(i),type(reccs_out_format),type(reccs_out_format[0]))
+    #             output = {'interest':i,"recommendations":reccs_out_format}
+    #             return jsonify(output)
     with open('hardcode_reccs.json','r',encoding='utf8') as f :
-        output = json.load(f)
+        output_reccs = json.load(f)
+    output = {'interest':'hardcoded_reccs','recommendations':output_reccs}
     return jsonify(output)
 
 if __name__ == '__main__':
